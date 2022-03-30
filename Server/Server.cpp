@@ -176,9 +176,12 @@ Response Server::subscribe(SubscribeReq req) {
 
 //Function to notify subscribers
 void Server::notify(Account updated, UPDATE::action a) {
+
+    //Add update headers
     string message = R"({"action":")"+UPDATE::toString(a);
     message += R"(","account":)"+updated.text()+"}";
 
+    //Remove subscribers on the top that are past their end time
     while(!this->subscribers.empty() &&
           this->subscribers.top().second<chrono::duration_cast<chrono::seconds>(
                   chrono::system_clock::now().time_since_epoch()
@@ -194,6 +197,7 @@ void Server::notify(Account updated, UPDATE::action a) {
         this->subscribers.pop();
     }
 
+    //Notify all subscribers
     for(auto &it:this->subsMap){
         this->sendLossless(it.second,message);
 

@@ -1,38 +1,39 @@
 package co;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class utils {
-    public static long parseMoney(String s) throws NumberFormatException {
-        Pattern pattern = Pattern.compile("^(\\d+)(?:\\.(\\d{0,2}))?$");
-        Matcher matcher = pattern.matcher(s);
-        if (!matcher.find()) {
-            throw new NumberFormatException("Invalid format");
+
+    public static float parseMoney(String s) throws Exception {
+        float nm = Float.parseFloat(s);
+
+        if(nm<0){
+            throw new Exception("Invalid input");
         }
-
-
-        long res = Long.parseLong(matcher.group(1));
-
-
-        res = res * 100;
-
-        if (matcher.group(2) != null && matcher.group(2).length() > 0) {
-            int cents = Integer.parseInt(matcher.group(2));
-
-            if (matcher.group(2).length() == 1) {
-                cents = cents * 10;
-            }
-            res = res + cents;
-        }
-        if (res < 0) {
-            throw new NumberFormatException("Overflow");
-        }
-
-        return res;
+        return nm;
 
 
     }
 
+    static final Set<Class> WRAPPER_TYPES = new HashSet<>(Arrays.asList(
+            Byte.class,
+            Short.class,
+            Integer.class,
+            Long.class,
+            Float.class,
+            Double.class,
+            Character.class,
+            Boolean.class,
+            String.class));
+
+    public static boolean isPrimitiveOrWrapper(Class t) {
+        return t.isPrimitive() || WRAPPER_TYPES.contains(t);
+    }
 
 }
+
+

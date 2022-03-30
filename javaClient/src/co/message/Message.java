@@ -1,42 +1,35 @@
-package co;
+package co.message;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import co.utils;
 
+//Serializable class
 public abstract class Message {
 
 
-    static final Set<Class> WRAPPER_TYPES = new HashSet<>(Arrays.asList(
-            Byte.class,
-            Short.class,
-            Integer.class,
-            Long.class,
-            Float.class,
-            Double.class,
-            Character.class,
-            Boolean.class,
-            String.class));
 
-    private boolean isPrimitiveOrWrapper(Class t) {
-        return t.isPrimitive() || WRAPPER_TYPES.contains(t);
-    }
 
     private String jsonSerializer(Object o) throws IllegalAccessException {
         StringBuilder str = new StringBuilder();
 
-        if (isPrimitiveOrWrapper(o.getClass())) {
+        //Parse primitive fields as text
+        if (utils.isPrimitiveOrWrapper(o.getClass())) {
             str.append("\"").append(o).append("\"");
             return str.toString();
         }
 
+        //Build array if object type is array
         if (o.getClass().isArray()) {
             str.append("[");
 
             for (int i = 0; i < Array.getLength(o); i++) {
                 Object child = Array.get(o, i);
+
+                //Serialize objects in array
                 str.append(jsonSerializer(child));
                 str.append(",");
             }
@@ -48,13 +41,20 @@ public abstract class Message {
         }
 
 
+        //Serialize object
         str.append("{");
         for (Field field : o.getClass().getFields()) {
-
+            //Insert field name
             str.append("\"").append(field.getName()).append("\"");
             str.append(":");
-
-            str.append(jsonSerializer(field.get(o)));
+            //Inert field value
+            if (field.get(o).getClass().isEnum()){
+                //Special case for enums
+                str.append("\"").append(field.get(o).toString()).append("\"");
+            }else {
+                //Serialize child object
+                str.append(jsonSerializer(field.get(o)));
+            }
             str.append(",");
         }
         str.deleteCharAt(str.length() - 1);
